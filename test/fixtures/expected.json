@@ -1,0 +1,53 @@
+{
+  "js-heap.jsonl": {
+    "kinds": [
+      "js-heap"
+    ],
+    "warnings": []
+  },
+  "native-buffer.jsonl": {
+    "kinds": [
+      "native-buffer"
+    ],
+    "warnings": []
+  },
+  "handles.jsonl": {
+    "kinds": [
+      "handles"
+    ],
+    "warnings": []
+  },
+  "allocator.jsonl": {
+    "kinds": [
+      "allocator-retention"
+    ],
+    "warnings": []
+  },
+  "sawtooth-flat.jsonl": {
+    "kinds": [
+      "none"
+    ],
+    "warnings": []
+  },
+  "mixed.jsonl": {
+    "kinds": [
+      "native-buffer",
+      "handles"
+    ],
+    "warnings": []
+  },
+  "short.jsonl": {
+    "kinds": [
+      "insufficient-data"
+    ],
+    "warnings": []
+  },
+  "multi-pid.jsonl": {
+    "kinds": [
+      "native-buffer"
+    ],
+    "warnings": [
+      "W_MULTIPLE_PIDS"
+    ]
+  }
+}

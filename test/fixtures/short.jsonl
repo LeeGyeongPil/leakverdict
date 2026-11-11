@@ -1,0 +1,4 @@
+{"v":1,"t":1700000000000,"pid":4242,"threadId":0,"node":"v22.12.0","rss":84032677,"heapTotal":41945495,"heapUsed":26216855,"external":4207298,"arrayBuffers":1151012,"resources":{"PipeWrap":1,"TCPServerWrap":1}}
+{"v":1,"t":1700000060000,"pid":4242,"threadId":0,"node":"v22.12.0","rss":83936396,"heapTotal":42052395,"heapUsed":26323755,"external":4279348,"arrayBuffers":1097464,"resources":{"PipeWrap":1,"TCPServerWrap":1}}
+{"v":1,"t":1700000120000,"pid":4242,"threadId":0,"node":"v22.12.0","rss":83918785,"heapTotal":42059081,"heapUsed":26330441,"external":4347359,"arrayBuffers":1075610,"resources":{"PipeWrap":1,"TCPServerWrap":1}}
+{"v":1,"t":1700000180000,"pid":4242,"threadId":0,"node":"v22.12.0","rss":83963247,"heapTotal":42103281,"heapUsed":26374641,"external":4303021,"arrayBuffers":1069247,"resources":{"PipeWrap":1,"TCPServerWrap":1}}
