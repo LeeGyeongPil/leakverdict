@@ -1,0 +1,61 @@
+{
+  "name": "leakverdict",
+  "version": "0.1.0",
+  "description": "Tells you which kind of Node.js memory growth you have (JS heap, native buffers, handles, allocator retention) from a runtime metrics time series.",
+  "keywords": ["nodejs", "memory", "memory-leak", "diagnostics", "rss", "heap", "soak-test"],
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/LeeGyeongPil/leakverdict.git"
+  },
+  "bugs": {
+    "url": "https://github.com/LeeGyeongPil/leakverdict/issues"
+  },
+  "homepage": "https://github.com/LeeGyeongPil/leakverdict#readme",
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
+  "types": "./dist/esm/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/esm/index.d.ts",
+        "default": "./dist/esm/index.js"
+      },
+      "require": {
+        "types": "./dist/cjs/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
+    },
+    "./register": {
+      "import": "./dist/esm/register.js",
+      "require": "./dist/cjs/register.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "leakverdict": "dist/esm/bin.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "README.ko.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "prepare": "node scripts/build.mjs",
+    "test": "npm run build && node scripts/run-tests.mjs",
+    "demo": "npm run build && node dist/esm/bin.js simulate buffer",
+    "gen-fixtures": "node scripts/gen-fixtures.mjs",
+    "check-pack": "node scripts/check-pack.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "20.19.43",
+    "typescript": "5.9.3"
+  }
+}
