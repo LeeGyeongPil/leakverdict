@@ -1,0 +1,28 @@
+# Runs the full test suite on every supported Node version, then checks the npm package.
+# No API keys or network services are needed: everything uses Node built-ins.
+name: ci
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "17 3 * * 1"   # weekly: catches breakage from new Node releases
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node-version: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - run: npm ci
+      - run: npm test
+        env:
+          LANG: C.UTF-8
+          LC_ALL: C.UTF-8
+      - run: node scripts/check-pack.mjs
