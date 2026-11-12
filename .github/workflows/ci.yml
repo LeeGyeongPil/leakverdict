@@ -10,6 +10,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    timeout-minutes: 15   # a hung run is cancelled instead of occupying a runner for 6 hours
     strategy:
       fail-fast: false
       matrix:
@@ -21,8 +22,11 @@ jobs:
           node-version: ${{ matrix.node-version }}
           cache: npm
       - run: npm ci
+        timeout-minutes: 5
       - run: npm test
+        timeout-minutes: 10
         env:
           LANG: C.UTF-8
           LC_ALL: C.UTF-8
       - run: node scripts/check-pack.mjs
+        timeout-minutes: 5

@@ -267,7 +267,7 @@ Planned for a later milestone and not part of this release: traffic-proportional
 git clone https://github.com/LeeGyeongPil/leakverdict.git
 cd leakverdict
 npm install
-LANG=C.UTF-8 LC_ALL=C.UTF-8 npm test   # build with tsc (strict), then 68 tests
+LANG=C.UTF-8 LC_ALL=C.UTF-8 npm test   # build with tsc (strict), then 72 tests
 node scripts/check-pack.mjs            # packs, installs the tarball elsewhere, checks ESM, CJS and the bin
 ```
 

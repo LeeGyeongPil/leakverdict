@@ -91,6 +91,7 @@ function packageVersion(): string {
 /** Run a simulation scenario in a real child process (with --expose-gc) and return when it ends. */
 function runChild(scenario: string, steps: number, intervalMs: number, outFile: string): Promise<void> {
   const runner = fileURLToPath(new URL('./scenarios/run.js', import.meta.url));
+  const limitMs = steps * intervalMs + 120_000;
   return new Promise((resolve, reject) => {
     const child = spawn(
       process.execPath,
@@ -98,6 +99,11 @@ function runChild(scenario: string, steps: number, intervalMs: number, outFile: 
       { stdio: ['ignore', 'ignore', 'pipe'] },
     );
     let stderrTail = '';
+    // Safety net: a scenario that never ends is killed after its expected run time plus 2 minutes.
+    const killer = setTimeout(() => {
+      stderrTail = 'timed out after ' + Math.round(limitMs / 1000) + ' s';
+      child.kill('SIGKILL');
+    }, limitMs);
     child.stderr.on('data', (chunk: Buffer) => {
       stderrTail = (stderrTail + chunk.toString()).slice(-400);
     });
@@ -110,6 +116,7 @@ function runChild(scenario: string, steps: number, intervalMs: number, outFile: 
     process.on('SIGINT', onInt);
     process.on('SIGTERM', onTerm);
     const cleanup = () => {
+      clearTimeout(killer);
       process.off('SIGINT', onInt);
       process.off('SIGTERM', onTerm);
     };

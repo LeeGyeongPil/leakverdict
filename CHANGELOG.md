@@ -3,6 +3,21 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.1.1] - 2026-11-12
+
+### Fixed
+- CI run that never finished (cancelled by GitHub after 6 hours, no log). The cause could not be reproduced locally, where the suite ends in about 10 s, so time limits were added at every layer.
+
+### Changed
+- `.github/workflows/ci.yml`: job `timeout-minutes: 15`, and step limits of 5 (`npm ci`), 10 (`npm test`) and 5 (pack check) minutes.
+- `npm test` runs `node --test --test-timeout=120000` and the runner is killed after 12 minutes. The per-test timeout only applies to asynchronous tests; a test blocked inside `spawnSync` is not covered by it and relies on the runner limit and the CI step limit.
+- The two child processes in `test/hang-guards.test.mjs` and the child processes in `scripts/check-pack.mjs` get stdin closed, a timeout and SIGKILL. Other tests that spawn children are not changed.
+
+### Known limitations
+- The root cause of the 6-hour CI run is still unconfirmed; the limits above bound the damage but do not explain it.
+- Some tests that call `spawnSync` have no per-call timeout of their own.
+- `leakverdict simulate` kills its scenario child process if it runs longer than `steps x interval + 120 s` and reports `E_SIMULATE_FAILED`.
+
 ## [0.1.0] - 2026-11-12
 
 ### Added
@@ -15,4 +30,5 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Errors are thrown as `LeakverdictError { code, params }` (13 codes) and rendered per language by the CLI; Korean messages contain no English fragments.
 - Dual ESM + CommonJS build, zero runtime dependencies, Node 20 / 22 / 24 CI.
 
+[0.1.1]: https://github.com/LeeGyeongPil/leakverdict/releases/tag/v0.1.1
 [0.1.0]: https://github.com/LeeGyeongPil/leakverdict/releases/tag/v0.1.0

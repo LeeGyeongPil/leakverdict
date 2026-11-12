@@ -13,7 +13,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
 
 function run(cmd, args, cwd) {
-  const r = spawnSync(cmd, args, { cwd, encoding: 'utf8', timeout: 240_000 });
+  const r = spawnSync(cmd, args, { cwd, encoding: 'utf8', timeout: 240_000, killSignal: 'SIGKILL', stdio: ['ignore', 'pipe', 'pipe'] });
   if (r.status !== 0) {
     throw new Error(`${cmd} ${args.join(' ')} failed (${r.status}): ${r.stderr || r.stdout}`);
   }
@@ -21,7 +21,7 @@ function run(cmd, args, cwd) {
 }
 
 function gitStatus() {
-  const r = spawnSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8' });
+  const r = spawnSync('git', ['status', '--porcelain'], { cwd: root, encoding: 'utf8', timeout: 30_000, stdio: ['ignore', 'pipe', 'pipe'] });
   return r.status === 0 ? r.stdout : null;
 }
 
