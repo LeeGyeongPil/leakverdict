@@ -3,6 +3,11 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.1.4] - 2026-11-13
+
+### Fixed
+- `examples/sampler-basic.mjs` printed 6 or 7 rows depending on timer ordering. It now takes samples with `sampleNow()` and always prints the documented 6 rows. No library behaviour change.
+
 ## [0.1.3] - 2026-11-13
 
 ### Fixed
@@ -43,6 +48,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Errors are thrown as `LeakverdictError { code, params }` (13 codes) and rendered per language by the CLI; Korean messages contain no English fragments.
 - Dual ESM + CommonJS build, zero runtime dependencies, Node 20 / 22 / 24 CI.
 
+[0.1.4]: https://github.com/LeeGyeongPil/leakverdict/releases/tag/v0.1.4
 [0.1.3]: https://github.com/LeeGyeongPil/leakverdict/releases/tag/v0.1.3
 [0.1.2]: https://github.com/LeeGyeongPil/leakverdict/releases/tag/v0.1.2
 [0.1.1]: https://github.com/LeeGyeongPil/leakverdict/releases/tag/v0.1.1
