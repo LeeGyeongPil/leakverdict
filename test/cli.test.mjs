@@ -64,6 +64,20 @@ test('--version, --help and no arguments', () => {
   }
 });
 
+test('--help lists all six --fail-on values in both languages, matching the option error', () => {
+  const kinds = ['js-heap', 'native-buffer', 'handles', 'allocator-retention', 'none', 'insufficient-data'];
+  for (const lang of ['en', 'ko']) {
+    const help = runBin(['--help', '--lang', lang]).stdout;
+    assert.ok(!help.includes('{kinds}'), `${lang}: placeholder filled`);
+    for (const k of kinds) assert.ok(help.includes(k), `${lang} help lists ${k}`);
+    assert.match(help, /any/);
+    assert.match(help, /none.*insufficient-data/s);
+    const err = runBin(['analyze', fixture('js-heap.jsonl'), '--fail-on', 'bogus', '--lang', lang]);
+    assert.equal(err.status, 2);
+    for (const k of kinds) assert.ok(err.stderr.includes(k), `${lang} error lists ${k}`);
+  }
+});
+
 test('analysis thresholds can be changed from the command line', () => {
   const strict = runBin(['analyze', fixture('js-heap.jsonl'), '--min-growth-mb', '500', '--fail-on', 'js-heap']);
   assert.equal(strict.status, 0);

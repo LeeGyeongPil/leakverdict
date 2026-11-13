@@ -105,7 +105,8 @@ export const ko: Record<MessageKey, string> = {
 옵션:
   --format <text|md|json>   보고서 형식(기본: text)
   --fail-on <종류|any>      해당 판정이 나오면 종료 코드 1
-                            (쉼표 구분: js-heap, native-buffer, handles, allocator-retention, 또는 "any")
+                            (쉼표 구분: {kinds};
+                            "any" = none·insufficient-data 를 뺀 모든 판정)
   --lang <en|ko>            메시지 언어(기본: LEAKVERDICT_LANG, LC_ALL, LC_MESSAGES, LANG 순)
   --pid <n>                 입력에 프로세스가 여러 개일 때 분석할 pid
   --min-samples <n>         판정에 필요한 최소 행 수(기본 6)

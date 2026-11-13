@@ -166,7 +166,7 @@ export async function runCli(argv: readonly string[], io: CliIo): Promise<number
     lang = resolveLang(values.lang, io.env);
 
     if (values.help || (positionals.length === 0 && !values.version)) {
-      io.stdout(t(lang, 'cli.help', { version: packageVersion(), scenarios: SCENARIOS.join(', ') }) + '\n');
+      io.stdout(t(lang, 'cli.help', { version: packageVersion(), scenarios: SCENARIOS.join(', '), kinds: KINDS.join(', ') }) + '\n');
       return 0;
     }
     if (values.version) {

@@ -109,7 +109,8 @@ Scenarios: {scenarios}
 Options:
   --format <text|md|json>   report format (default: text)
   --fail-on <kinds|any>     exit with code 1 when one of these verdicts is found
-                            (comma separated: js-heap, native-buffer, handles, allocator-retention; or "any")
+                            (comma separated: {kinds};
+                            or "any" = every verdict except none and insufficient-data)
   --lang <en|ko>            message language (default: LEAKVERDICT_LANG, then LC_ALL, LC_MESSAGES, LANG)
   --pid <n>                 analyze this process id when the input contains several
   --min-samples <n>         minimum rows for a verdict (default 6)
