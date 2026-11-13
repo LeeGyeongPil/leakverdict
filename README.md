@@ -138,6 +138,7 @@ npx leakverdict analyze mem.jsonl mem.jsonl.1            # rotated files can be 
 npx leakverdict analyze mem.jsonl --format md            # Markdown table for CI summaries
 npx leakverdict analyze mem.jsonl --format json          # machine readable
 npx leakverdict analyze mem.jsonl --fail-on js-heap      # exit code 1 if a js-heap verdict is found
+npx leakverdict analyze mem.jsonl --skip 10m             # ignore the first 10 minutes (warm-up)
 npx leakverdict simulate buffer                          # scenarios: buffer, jsobj, handle, churn, idle, release
 ```
 
@@ -161,7 +162,7 @@ The screenshot above used a test fixture; with the sample logs in this repo run 
 
 *`--format md` output, ready to paste into a CI job summary. This log has two causes at once, so two rows.*
 
-Tune thresholds with `--min-samples` (default 6), `--min-growth-mb` (default 5), `--min-rel-growth` (default 0.1, meaning 10 percent of the starting level) and `--min-r2` (default 0.5). Growth must pass both the absolute and the relative threshold, so on a large heap (for example 1.5 GB growing 120 MB per hour) the 10 percent rule can hide a real trend: lower it with `--min-rel-growth 0.01`. If you pass only `--min-growth-mb`, the relative threshold is set to 0 so that the option has an effect. Pick one process from a log that contains several with `--pid`.
+Tune thresholds with `--min-samples` (default 6), `--min-growth-mb` (default 5), `--min-rel-growth` (default 0.1, meaning 10 percent of the starting level) and `--min-r2` (default 0.5). Growth must pass both the absolute and the relative threshold, so on a large heap (for example 1.5 GB growing 120 MB per hour) the 10 percent rule can hide a real trend: lower it with `--min-rel-growth 0.01`. If you pass only `--min-growth-mb`, the relative threshold is set to 0 so that the option has an effect. Cut the warm-up off the front with `--skip <n><s|m|h>` (for example `--skip 10m`); the rows after it are judged by the usual rules, and if too few remain the report says how many rows were skipped. `--skip` works with `simulate` too. Pick one process from a log that contains several with `--pid`.
 
 ## Language
 
@@ -186,13 +187,13 @@ Everything exported from `leakverdict` (types are included; anything else is int
 | `Sampler.stop()` | Stops sampling; safe to call twice | none | `Promise<void>` |
 | `sampleOnce(counters?)` | One sample, no timer, no file | `counters` | `Row` |
 | `readJsonl(paths, opts?)` | Reads and merges JSONL files, sorts by time, drops duplicates, validates rows | `paths` (string or array), `pid`, `readFile` | `Promise<{ rows, warnings }>` |
-| `analyze(rows, opts?)` | Pure function: same rows and options give the same report | `rows`, `windows` (8), `minSamples` (6), `minGrowthMB` (5), `minRelGrowth` (0.1), `minHandleGrowth` (10), `minR2` (0.5) | `Report` |
+| `analyze(rows, opts?)` | Pure function: same rows and options give the same report | `rows`, `windows` (8), `minSamples` (6), `minGrowthMB` (5), `minRelGrowth` (0.1), `minHandleGrowth` (10), `minR2` (0.5), `skip` (0, ms; drops rows within this time of the first row; `Report.skipped` counts them) | `Report` |
 | `renderReport(report, opts)` | Renders a report | `{ format: 'text' \| 'md' \| 'json', lang?: 'en' \| 'ko' }` | `string` |
 | `resolveLang(arg?, env?)` | Picks the language by the order above | `arg`, `env` | `'en' \| 'ko'` |
 | `validateRow(value)` | Checks a parsed value against row schema v1 | `value` | `Row` (throws `LeakverdictError`) |
 | `LeakverdictError` | Error with `code` and `params` | n/a | n/a |
 
-Types: `Sampler`, `SamplerOptions`, `ReadOptions`, `ReadResult`, `AnalyzeOptions`, `Report` (`span`, `findings`, `warnings`), `Finding` (`kind`, `confidence`, `evidence[]`, `next`), `Evidence`, `VerdictKind` (`js-heap`, `native-buffer`, `handles`, `allocator-retention`, `none`, `insufficient-data`), `Confidence` (`high`, `medium`, `low`, `suspected`), `NextStepCode`, `ReportFormat`, `Lang`, `Row`, `Warning`, `WarningCode` (`W_MULTIPLE_PIDS`, `W_MIXED_NODE`), `ErrorCode`.
+Types: `Sampler`, `SamplerOptions`, `ReadOptions`, `ReadResult`, `AnalyzeOptions`, `Report` (`span`, `skipped`, `findings`, `warnings`), `Finding` (`kind`, `confidence`, `evidence[]`, `next`), `Evidence`, `VerdictKind` (`js-heap`, `native-buffer`, `handles`, `allocator-retention`, `none`, `insufficient-data`), `Confidence` (`high`, `medium`, `low`, `suspected`), `NextStepCode`, `ReportFormat`, `Lang`, `Row`, `Warning`, `WarningCode` (`W_MULTIPLE_PIDS`, `W_MIXED_NODE`), `ErrorCode`.
 
 Errors are thrown as `LeakverdictError` with one of these codes: `E_FILE_NOT_FOUND`, `E_FILE_ACCESS`, `E_IS_DIRECTORY`, `E_EMPTY_INPUT`, `E_PARSE`, `E_SCHEMA`, `E_BAD_OPTION`, `E_UNKNOWN_OPTION`, `E_MISSING_VALUE`, `E_NO_FILES`, `E_UNKNOWN_SCENARIO`, `E_WRITE`, `E_SIMULATE_FAILED`. The CLI renders them as one readable line in the chosen language and exits with code 2. Write failures inside the sampler go to `onError` instead of being thrown.
 
@@ -246,9 +247,9 @@ Expected: `native-buffer (high)` with external and arrayBuffers growing by about
 - `allocator-retention` is a suspicion, never proof: it means `rss` grew while the heap, `external` and handles did not. Confirm it by running the same workload with another allocator (for example jemalloc) or another Node version.
 - `simulate churn` and `simulate release` depend on the OS and allocator, so their verdict differs between machines. On the macOS machine used for these docs, `simulate release` reported `allocator-retention (suspected)`; do not expect the same elsewhere.
 - Very short runs (such as `simulate`, about a second) show huge per-hour slopes because slopes are converted to per hour. Use minutes or hours of data for real decisions.
-- A step that rises once and then stays flat (cache warm-up, filling a pool) can still be reported as growth (`js-heap`, medium; a warm-up ramp in the first 20 percent of the log gives `js-heap`, low). Start recording, or analyze, after warm-up.
+- A step that rises once and then stays flat (cache warm-up, filling a pool) can still be reported as growth (`js-heap`, medium; a warm-up ramp in the first 20 percent of the log gives `js-heap`, low). Start recording after warm-up, or drop the front of the log with `--skip` (for example `--skip 10m`).
 - Growth that only starts at the very end of the log is not caught yet, because the lower envelope uses each window's minimum (for example +200 MB in the last 3 of 60 rows gives `none`). Keep collecting and analyze again.
-- A negative number as the value of a threshold option written with a space (`--min-rel-growth -1`) is reported as "needs a value" instead of "must be 0 or more", because the argument parser treats it as ambiguous. Write `--min-rel-growth=-1` to get the exact message. The exit code is 2 either way.
+- A negative number as the value of a threshold option or `--skip` written with a space (`--min-rel-growth -1`, `--skip -5m`) is reported as "needs a value" instead of "must be 0 or more", because the argument parser treats it as ambiguous. Write `--min-rel-growth=-1` to get the exact message. The exit code is 2 either way.
 - Several processes in one file: only one is analyzed (the last, or `--pid`), with a warning. Mixed Node versions also produce a warning.
 
 Planned for a later milestone and not part of this release: traffic-proportional versus time-proportional growth, an SVG chart, a `run -- <command>` wrapper.
@@ -275,7 +276,7 @@ Planned for a later milestone and not part of this release: traffic-proportional
 git clone https://github.com/LeeGyeongPil/leakverdict.git
 cd leakverdict
 npm install
-LANG=C.UTF-8 LC_ALL=C.UTF-8 npm test   # build with tsc (strict), then 74 tests
+LANG=C.UTF-8 LC_ALL=C.UTF-8 npm test   # build with tsc (strict), then 81 tests
 node scripts/check-pack.mjs            # packs, installs the tarball elsewhere, checks ESM, CJS and the bin
 ```
 

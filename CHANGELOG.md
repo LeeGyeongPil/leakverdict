@@ -3,6 +3,13 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2026-11-13
+
+### Added
+- CLI `--skip <n><s|m|h>` (for example `--skip 10m`) ignores the first part of the log (warm-up) for `analyze` and `simulate`. The remaining rows are judged by the usual rules.
+- `analyze(rows, { skip })` (milliseconds, integer >= 0) and `Report.skipped` (number of dropped rows, 0 when unused); the JSON report has a new top-level `skipped` field.
+- When too few rows remain, the `insufficient-data` text says how many rows `--skip` removed. Output without `--skip` is unchanged.
+
 ## [0.1.4] - 2026-11-13
 
 ### Fixed
@@ -48,6 +55,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Errors are thrown as `LeakverdictError { code, params }` (13 codes) and rendered per language by the CLI; Korean messages contain no English fragments.
 - Dual ESM + CommonJS build, zero runtime dependencies, Node 20 / 22 / 24 CI.
 
+[0.2.0]: https://github.com/LeeGyeongPil/leakverdict/compare/v0.1.4...v0.2.0
 [0.1.4]: https://github.com/LeeGyeongPil/leakverdict/releases/tag/v0.1.4
 [0.1.3]: https://github.com/LeeGyeongPil/leakverdict/releases/tag/v0.1.3
 [0.1.2]: https://github.com/LeeGyeongPil/leakverdict/releases/tag/v0.1.2

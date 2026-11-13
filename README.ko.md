@@ -138,6 +138,7 @@ npx leakverdict analyze mem.jsonl mem.jsonl.1            # 회전된 파일을 �
 npx leakverdict analyze mem.jsonl --format md            # CI 요약용 Markdown 표
 npx leakverdict analyze mem.jsonl --format json          # 기계가 읽는 형식
 npx leakverdict analyze mem.jsonl --fail-on js-heap      # js-heap 판정이면 종료 코드 1
+npx leakverdict analyze mem.jsonl --skip 10m             # 앞 10분(워밍업)을 제외하고 분석
 npx leakverdict simulate buffer                          # 시나리오: buffer, jsobj, handle, churn, idle, release
 ```
 
@@ -161,7 +162,7 @@ npx leakverdict simulate buffer                          # 시나리오: buffer,
 
 *`--format md` 출력으로, CI 작업 요약에 그대로 붙일 수 있습니다. 이 로그는 원인이 두 개라 행이 두 개입니다.*
 
-임계값은 `--min-samples`(기본 6), `--min-growth-mb`(기본 5), `--min-rel-growth`(기본 0.1, 시작 수준의 10%), `--min-r2`(기본 0.5)로 조정합니다. 증가는 절대 임계와 상대 임계를 모두 넘어야 하므로, 큰 힙(예: 1.5 GB 가 시간당 120 MB 씩 증가)에서는 10% 규칙이 진짜 추세를 가릴 수 있습니다. 그럴 때는 `--min-rel-growth 0.01` 처럼 낮추세요. `--min-growth-mb` 만 주면 옵션이 효과를 내도록 상대 임계가 0 이 됩니다. 여러 프로세스가 섞인 로그에서는 `--pid` 로 하나를 고릅니다.
+임계값은 `--min-samples`(기본 6), `--min-growth-mb`(기본 5), `--min-rel-growth`(기본 0.1, 시작 수준의 10%), `--min-r2`(기본 0.5)로 조정합니다. 증가는 절대 임계와 상대 임계를 모두 넘어야 하므로, 큰 힙(예: 1.5 GB 가 시간당 120 MB 씩 증가)에서는 10% 규칙이 진짜 추세를 가릴 수 있습니다. 그럴 때는 `--min-rel-growth 0.01` 처럼 낮추세요. `--min-growth-mb` 만 주면 옵션이 효과를 내도록 상대 임계가 0 이 됩니다. 앞쪽 워밍업 구간은 `--skip <n><s|m|h>`(예: `--skip 10m`)로 잘라 낼 수 있습니다. 남은 행에 기존 규칙을 그대로 적용하며, 남은 행이 너무 적으면 보고서가 몇 개 행을 건너뛰었는지 알려 줍니다. `--skip` 은 `simulate` 에서도 동작합니다. 여러 프로세스가 섞인 로그에서는 `--pid` 로 하나를 고릅니다.
 
 ## 언어
 
@@ -186,13 +187,13 @@ LEAKVERDICT_LANG=ko npx leakverdict analyze mem.jsonl
 | `Sampler.stop()` | 샘플링 중지. 두 번 불러도 안전 | 없음 | `Promise<void>` |
 | `sampleOnce(counters?)` | 타이머·파일 없이 한 번 찍기 | `counters` | `Row` |
 | `readJsonl(paths, opts?)` | JSONL 병합, 시간순 정렬, 중복 제거, 행 검증 | `paths`(문자열 또는 배열), `pid`, `readFile` | `Promise<{ rows, warnings }>` |
-| `analyze(rows, opts?)` | 순수 함수: 같은 입력이면 같은 보고서 | `rows`, `windows`(8), `minSamples`(6), `minGrowthMB`(5), `minRelGrowth`(0.1), `minHandleGrowth`(10), `minR2`(0.5) | `Report` |
+| `analyze(rows, opts?)` | 순수 함수: 같은 입력이면 같은 보고서 | `rows`, `windows`(8), `minSamples`(6), `minGrowthMB`(5), `minRelGrowth`(0.1), `minHandleGrowth`(10), `minR2`(0.5), `skip`(0, ms; 첫 행에서 이 시간 안의 행을 제외, 개수는 `Report.skipped`) | `Report` |
 | `renderReport(report, opts)` | 보고서 출력 | `{ format: 'text' \| 'md' \| 'json', lang?: 'en' \| 'ko' }` | `string` |
 | `resolveLang(arg?, env?)` | 위 순서로 언어 결정 | `arg`, `env` | `'en' \| 'ko'` |
 | `validateRow(value)` | 파싱한 값을 행 스키마 v1 으로 검사 | `value` | `Row`(실패 시 `LeakverdictError`) |
 | `LeakverdictError` | `code` 와 `params` 가 있는 오류 | 해당 없음 | 해당 없음 |
 
-타입: `Sampler`, `SamplerOptions`, `ReadOptions`, `ReadResult`, `AnalyzeOptions`, `Report`(`span`, `findings`, `warnings`), `Finding`(`kind`, `confidence`, `evidence[]`, `next`), `Evidence`, `VerdictKind`(`js-heap`, `native-buffer`, `handles`, `allocator-retention`, `none`, `insufficient-data`), `Confidence`(`high`, `medium`, `low`, `suspected`), `NextStepCode`, `ReportFormat`, `Lang`, `Row`, `Warning`, `WarningCode`(`W_MULTIPLE_PIDS`, `W_MIXED_NODE`), `ErrorCode`.
+타입: `Sampler`, `SamplerOptions`, `ReadOptions`, `ReadResult`, `AnalyzeOptions`, `Report`(`span`, `skipped`, `findings`, `warnings`), `Finding`(`kind`, `confidence`, `evidence[]`, `next`), `Evidence`, `VerdictKind`(`js-heap`, `native-buffer`, `handles`, `allocator-retention`, `none`, `insufficient-data`), `Confidence`(`high`, `medium`, `low`, `suspected`), `NextStepCode`, `ReportFormat`, `Lang`, `Row`, `Warning`, `WarningCode`(`W_MULTIPLE_PIDS`, `W_MIXED_NODE`), `ErrorCode`.
 
 오류는 다음 코드 중 하나를 가진 `LeakverdictError` 로 던져집니다. `E_FILE_NOT_FOUND`, `E_FILE_ACCESS`, `E_IS_DIRECTORY`, `E_EMPTY_INPUT`, `E_PARSE`, `E_SCHEMA`, `E_BAD_OPTION`, `E_UNKNOWN_OPTION`, `E_MISSING_VALUE`, `E_NO_FILES`, `E_UNKNOWN_SCENARIO`, `E_WRITE`, `E_SIMULATE_FAILED`. CLI 는 고른 언어로 읽기 쉬운 한 줄을 출력하고 종료 코드 2 로 끝납니다. 샘플러 안의 쓰기 실패는 던지지 않고 `onError` 로 전달됩니다.
 
@@ -246,9 +247,9 @@ npx leakverdict analyze mem.jsonl
 - `allocator-retention` 은 증거가 아니라 의심입니다. `rss` 는 늘었는데 힙·`external`·핸들은 늘지 않았다는 뜻입니다. 다른 할당기(예: jemalloc)나 다른 Node 버전으로 같은 작업을 돌려 확인하세요.
 - `simulate churn` 과 `simulate release` 는 OS·할당기에 따라 달라서 기계마다 판정이 다릅니다. 이 문서를 쓴 macOS 에서 `simulate release` 는 `allocator-retention (suspected)` 을 냈지만 다른 환경에서 같다고 기대하지 마세요.
 - 아주 짧은 실행(예: 1초 정도의 `simulate`)은 기울기를 시간당으로 환산하기 때문에 터무니없이 큰 값이 나옵니다. 실제 판단에는 분~시간 단위 데이터를 쓰세요.
-- 한 번 오르고 멈추는 계단(캐시 워밍업, 풀 채우기)도 증가로 보고될 수 있습니다(`js-heap` medium, 로그 처음 20%의 워밍업 구간은 `js-heap` low). 워밍업이 끝난 뒤부터 기록하거나 분석하세요.
+- 한 번 오르고 멈추는 계단(캐시 워밍업, 풀 채우기)도 증가로 보고될 수 있습니다(`js-heap` medium, 로그 처음 20%의 워밍업 구간은 `js-heap` low). 워밍업이 끝난 뒤부터 기록하거나, `--skip`(예: `--skip 10m`)으로 앞부분을 빼고 분석하세요.
 - 로그 맨 끝에서야 시작된 증가는 아직 잡히지 않습니다. 하한 포락선이 창별 최솟값을 쓰기 때문입니다(예: 60행 중 마지막 3행에서 +200 MB 면 `none`). 계속 수집한 뒤 다시 분석하세요.
-- 임계값 옵션에 음수를 공백으로 띄워 주면(`--min-rel-growth -1`) "0 이상이어야 합니다" 대신 "값이 필요합니다" 로 보고됩니다. 인자 파서가 모호한 인자로 보기 때문입니다. `--min-rel-growth=-1` 로 쓰면 정확한 메시지가 나옵니다. 종료 코드는 어느 쪽이든 2 입니다.
+- 임계값 옵션이나 `--skip` 에 음수를 공백으로 띄워 주면(`--min-rel-growth -1`, `--skip -5m`) "0 이상이어야 합니다" 대신 "값이 필요합니다" 로 보고됩니다. 인자 파서가 모호한 인자로 보기 때문입니다. `--min-rel-growth=-1` 로 쓰면 정확한 메시지가 나옵니다. 종료 코드는 어느 쪽이든 2 입니다.
 - 한 파일에 프로세스가 여러 개면 하나(마지막 것, 또는 `--pid`)만 분석하고 경고를 냅니다. Node 버전이 섞여 있어도 경고가 나옵니다.
 
 시간 비례와 트래픽 비례 증가 구분, SVG 차트, `run -- <command>` 래퍼는 이후 마일스톤에서 계획 중이며 이번 릴리스에는 없습니다.
@@ -275,7 +276,7 @@ npx leakverdict analyze mem.jsonl
 git clone https://github.com/LeeGyeongPil/leakverdict.git
 cd leakverdict
 npm install
-LANG=C.UTF-8 LC_ALL=C.UTF-8 npm test   # tsc(strict) 빌드 후 테스트 74개
+LANG=C.UTF-8 LC_ALL=C.UTF-8 npm test   # tsc(strict) 빌드 후 테스트 81개
 node scripts/check-pack.mjs            # 패키징 후 다른 곳에 tarball 을 설치해 ESM·CJS·bin 확인
 ```
 
