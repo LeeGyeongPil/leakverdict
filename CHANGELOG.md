@@ -3,6 +3,11 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.1.3] - 2026-11-13
+
+### Fixed
+- `--help` (en/ko) now lists all six `--fail-on` values, including `none` and `insufficient-data`, and says that `any` excludes those two. The list is built from the same constant the parser uses, so help and error message cannot drift apart.
+
 ## [0.1.2] - 2026-11-13
 
 ### Fixed
@@ -38,6 +43,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Errors are thrown as `LeakverdictError { code, params }` (13 codes) and rendered per language by the CLI; Korean messages contain no English fragments.
 - Dual ESM + CommonJS build, zero runtime dependencies, Node 20 / 22 / 24 CI.
 
+[0.1.3]: https://github.com/LeeGyeongPil/leakverdict/releases/tag/v0.1.3
 [0.1.2]: https://github.com/LeeGyeongPil/leakverdict/releases/tag/v0.1.2
 [0.1.1]: https://github.com/LeeGyeongPil/leakverdict/releases/tag/v0.1.1
 [0.1.0]: https://github.com/LeeGyeongPil/leakverdict/releases/tag/v0.1.0
