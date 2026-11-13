@@ -41,10 +41,11 @@ export function findingTitle(f: Finding, lang: Lang): string {
 
 export function findingDetail(f: Finding, report: Report, lang: Lang): string | undefined {
   if (f.kind === 'insufficient-data') {
-    return t(lang, 'report.insufficient', {
+    const base = t(lang, 'report.insufficient', {
       samples: report.span.samples,
       needed: f.params?.needed ?? 0,
     });
+    return report.skipped > 0 ? base + t(lang, 'report.skipped', { skipped: report.skipped }) : base;
   }
   return undefined;
 }

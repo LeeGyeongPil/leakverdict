@@ -31,6 +31,7 @@ const OPTIONS = {
   'min-growth-mb': { type: 'string' },
   'min-rel-growth': { type: 'string' },
   'min-r2': { type: 'string' },
+  skip: { type: 'string' },
   out: { type: 'string' },
   steps: { type: 'string' },
   'interval-ms': { type: 'string' },
@@ -46,6 +47,10 @@ const KINDS: readonly VerdictKind[] = [
   'none',
   'insufficient-data',
 ];
+
+/** Units accepted by --skip and their length in ms. Parser, help and error message all use this one table. */
+const SKIP_UNITS: Readonly<Record<string, number>> = { s: 1000, m: 60_000, h: 3_600_000 };
+const SKIP_UNIT_NAMES = Object.keys(SKIP_UNITS);
 
 /** `expected` is a language neutral code (see the exp.* messages), `list` fills its {list} placeholder. */
 function badOption(option: string, value: string, expected: string, list = ''): LeakverdictError {
@@ -67,6 +72,17 @@ function toNumber(option: string, raw: string | undefined, expected: string, ok:
   const n = Number(raw);
   if (raw.trim() === '' || !Number.isFinite(n) || !ok(n)) throw badOption(option, raw, expected);
   return n;
+}
+
+/** Parse `<n><s|m|h>` (for example 90s, 10m, 1h) into milliseconds. */
+function parseSkip(raw: string | undefined): number | undefined {
+  if (raw === undefined) return undefined;
+  const m = /^(\d+)([a-z]+)$/.exec(raw.trim());
+  const factor = m ? SKIP_UNITS[m[2] ?? ''] : undefined;
+  if (!m || factor === undefined) throw badOption('--skip', raw, 'duration', SKIP_UNIT_NAMES.join(', '));
+  const ms = Number(m[1]) * factor;
+  if (!Number.isSafeInteger(ms)) throw badOption('--skip', raw, 'duration', SKIP_UNIT_NAMES.join(', '));
+  return ms;
 }
 
 function parseFailOn(raw: string | undefined): Set<VerdictKind> | 'any' | undefined {
@@ -166,7 +182,7 @@ export async function runCli(argv: readonly string[], io: CliIo): Promise<number
     lang = resolveLang(values.lang, io.env);
 
     if (values.help || (positionals.length === 0 && !values.version)) {
-      io.stdout(t(lang, 'cli.help', { version: packageVersion(), scenarios: SCENARIOS.join(', '), kinds: KINDS.join(', ') }) + '\n');
+      io.stdout(t(lang, 'cli.help', { version: packageVersion(), scenarios: SCENARIOS.join(', '), kinds: KINDS.join(', '), skipUnits: SKIP_UNIT_NAMES.join('|') }) + '\n');
       return 0;
     }
     if (values.version) {
@@ -190,6 +206,8 @@ export async function runCli(argv: readonly string[], io: CliIo): Promise<number
     if (minRel !== undefined) analyzeOpts.minRelGrowth = minRel;
     else if (minGrowth !== undefined) analyzeOpts.minRelGrowth = 0;
     if (minR2 !== undefined) analyzeOpts.minR2 = minR2;
+    const skip = parseSkip(values.skip);
+    if (skip !== undefined) analyzeOpts.skip = skip;
 
     const [command, ...rest] = positionals;
     let files: string[];

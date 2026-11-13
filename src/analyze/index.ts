@@ -25,6 +25,8 @@ export interface AnalyzeOptions {
   minHandleGrowth?: number;
   /** Minimum R2 of the envelope fit. Default 0.5. */
   minR2?: number;
+  /** Warm-up to ignore: rows within this many milliseconds of the first row are dropped. Integer >= 0, default 0. */
+  skip?: number;
 }
 
 export interface Report {
@@ -32,6 +34,8 @@ export interface Report {
   span: { from: number; to: number; samples: number; pid: number; node: string };
   findings: Finding[];
   warnings: Warning[];
+  /** Number of leading rows dropped by the `skip` option (0 when it is not used). */
+  skipped: number;
 }
 
 function check(option: string, value: number | undefined, ok: (n: number) => boolean, expected: string): void {
@@ -49,6 +53,7 @@ export function analyze(rows: readonly Row[], opts: AnalyzeOptions = {}): Report
   check('minRelGrowth', opts.minRelGrowth, (n) => n >= 0, 'number-min-0');
   check('minHandleGrowth', opts.minHandleGrowth, (n) => n >= 1, 'number-min-1');
   check('minR2', opts.minR2, (n) => n >= 0 && n <= 1, 'number-0-1');
+  check('skip', opts.skip, (n) => Number.isInteger(n) && n >= 0, 'non-negative-int');
 
   const th = { ...DEFAULT_THRESHOLDS };
   for (const key of Object.keys(th) as (keyof typeof th)[]) {
@@ -56,7 +61,10 @@ export function analyze(rows: readonly Row[], opts: AnalyzeOptions = {}): Report
     if (v !== undefined) th[key] = v;
   }
 
-  const sorted = [...rows].sort((a, b) => a.t - b.t);
+  const all = [...rows].sort((a, b) => a.t - b.t);
+  // Warm-up: drop rows that are less than `skip` ms after the first row; the rest is analyzed as usual.
+  const cutoff = (all[0]?.t ?? 0) + (opts.skip ?? 0);
+  const sorted = all.filter((r) => r.t >= cutoff);
   const first = sorted[0];
   const last = sorted[sorted.length - 1];
   return {
@@ -70,5 +78,6 @@ export function analyze(rows: readonly Row[], opts: AnalyzeOptions = {}): Report
     },
     findings: evaluate(sorted, th),
     warnings: [],
+    skipped: all.length - sorted.length,
   };
 }

@@ -34,6 +34,7 @@ export const en = {
   'exp.command': 'analyze or simulate',
   'exp.format': 'one of {list}',
   'exp.fail-on': 'any, or a comma separated list of {list}',
+  'exp.duration': 'a whole number followed by one of {list}, for example 10m',
   'exp.lang': 'en or ko',
   'exp.int-3-1000': 'an integer between 3 and 1000',
   'exp.int-1-60000': 'an integer between 1 and 60000',
@@ -91,6 +92,7 @@ export const en = {
   'report.span': 'Samples: {samples} over {minutes} min ({from} .. {to}), pid {pid}, Node {node}',
   'report.next': 'Next step',
   'report.warnings': 'Warnings',
+  'report.skipped': ' {skipped} rows were skipped by --skip.',
   'report.insufficient': 'Only {samples} samples were usable (at least {needed} are needed).',
   'md.col.verdict': 'Verdict',
   'md.col.confidence': 'Confidence',
@@ -118,6 +120,7 @@ Options:
   --min-rel-growth <n>      minimum growth relative to the starting level, 0.1 = 10% (default 0.1;
                             lower it for big heaps; giving only --min-growth-mb sets this to 0)
   --min-r2 <0..1>           minimum trend fit (default 0.5)
+  --skip <n><{skipUnits}>         ignore the first n s/m/h (warm-up), e.g. 10m
   --out <file>              simulate: keep the recorded JSONL here
   --steps <n>               simulate: number of growth steps (default 10)
   --interval-ms <n>         simulate: pause between steps in ms (default 50)

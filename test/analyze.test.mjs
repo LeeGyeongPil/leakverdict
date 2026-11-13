@@ -164,3 +164,35 @@ test('rotated files are merged in time order and duplicates are dropped', async 
     tmp.cleanup();
   }
 });
+
+test('skip: a warm-up ramp is a leak without skip and none with skip; skipped counts the dropped rows', () => {
+  const rows = makeRows(30, (i) => ({ heapUsed: i < 5 ? 20 + i * 2 : 30 }));
+  const plain = analyze(rows);
+  assert.equal(plain.skipped, 0);
+  assert.equal(plain.findings[0].kind, 'js-heap');
+  const cut = analyze(rows, { skip: 5 * 60_000 });
+  assert.equal(cut.skipped, 5);
+  assert.equal(cut.span.samples, 25);
+  assert.equal(cut.span.from, rows[5].t);
+  assert.equal(cut.findings[0].kind, 'none');
+  assert.deepEqual(analyze(rows, { skip: 0 }), plain, 'skip 0 equals no skip');
+});
+
+test('skip: too few rows left gives insufficient-data, and the text names the skipped rows', () => {
+  const rows = makeRows(10, (i) => ({ heapUsed: 20 + i }));
+  const report = analyze(rows, { skip: 7 * 60_000 });
+  assert.equal(report.skipped, 7);
+  assert.equal(report.findings[0].kind, 'insufficient-data');
+  const text = renderReport(report, { format: 'text', lang: 'en' });
+  assert.match(text, /Only 3 samples were usable \(at least 6 are needed\)\. 7 rows were skipped by --skip\./);
+  const plain = renderReport(analyze(makeRows(3, () => ({}))), { format: 'text', lang: 'en' });
+  assert.ok(!plain.includes('skipped by'), 'no mention without skip');
+});
+
+test('skip: invalid values throw E_BAD_OPTION', () => {
+  const rows = makeRows(10, () => ({}));
+  for (const bad of [-1, 1.5, NaN, Infinity, '5']) {
+    assert.throws(() => analyze(rows, { skip: bad }), (e) => e.code === 'E_BAD_OPTION' && e.params.option === 'skip');
+  }
+  assert.deepEqual(analyze([], { skip: 1000 }).skipped, 0);
+});

@@ -15,6 +15,7 @@ export function renderJson(report: Report, lang: Lang): string {
     version: report.version,
     lang,
     span: report.span,
+    skipped: report.skipped,
     findings: report.findings.map((f) => ({
       kind: f.kind,
       confidence: f.confidence,

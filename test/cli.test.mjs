@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { test } from 'node:test';
-import { fixture, runBin, runInProcess } from './helpers.mjs';
+import { fixture, makeRows, makeTmp, runBin, runInProcess } from './helpers.mjs';
 
 const version = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')).version;
 
@@ -91,4 +92,80 @@ test('in-process CLI call returns the exit code and keeps stdout and stderr sepa
   assert.equal(ok.code, 1);
   assert.equal(ok.stderr, '');
   assert.match(ok.stdout, /resources\.Timeout/);
+});
+
+// ---- --skip (warm-up) ----
+// 30 rows, 1 minute apart: a 6 MB warm-up step inside the first 5 minutes, flat afterwards.
+const warmupRows = makeRows(30, (i) => ({ heapUsed: i < 5 ? 20 + i * 2 : 30, rss: 100, heapTotal: 50 }));
+const withWarmup = () => {
+  const { dir, cleanup } = makeTmp();
+  const file = join(dir, 'warm.jsonl');
+  writeFileSync(file, warmupRows.map((r) => JSON.stringify(r)).join('\n') + '\n');
+  return { file, cleanup };
+};
+
+test('--skip drops the warm-up: 10m, 90s and 1h parse; the verdict changes', async () => {
+  const { file, cleanup } = withWarmup();
+  try {
+    const none = await runInProcess(['analyze', file, '--format', 'json']);
+    assert.equal(JSON.parse(none.stdout).skipped, 0);
+    assert.equal(JSON.parse(none.stdout).findings[0].kind, 'js-heap');
+    const skipped = await runInProcess(['analyze', file, '--format', 'json', '--skip', '5m']);
+    const doc = JSON.parse(skipped.stdout);
+    assert.equal(doc.skipped, 5);
+    assert.equal(doc.span.samples, 25);
+    assert.equal(doc.findings[0].kind, 'none');
+    const s90 = JSON.parse((await runInProcess(['analyze', file, '--format', 'json', '--skip', '90s'])).stdout);
+    assert.equal(s90.skipped, 2);
+    const h1 = JSON.parse((await runInProcess(['analyze', file, '--format', 'json', '--skip', '1h'])).stdout);
+    assert.equal(h1.skipped, 30);
+    assert.equal(h1.findings[0].kind, 'insufficient-data');
+    const sim = await runInProcess(['analyze', file, '--skip', '10m']);
+    assert.equal(sim.code, 0);
+  } finally {
+    cleanup();
+  }
+});
+
+test('--skip leaving too few rows says how many rows were skipped (en and ko)', async () => {
+  const { file, cleanup } = withWarmup();
+  try {
+    const en = await runInProcess(['analyze', file, '--skip', '25m', '--lang', 'en']);
+    assert.match(en.stdout, /Only 5 samples were usable/);
+    assert.match(en.stdout, /25 rows were skipped by --skip/);
+    const ko = await runInProcess(['analyze', file, '--skip', '25m', '--lang', 'ko']);
+    assert.match(ko.stdout, /--skip 으로 25개 행을 건너뛰었습니다/);
+  } finally {
+    cleanup();
+  }
+});
+
+test('--skip rejects values without a valid unit, negative, fractional and empty values', async () => {
+  const { file, cleanup } = withWarmup();
+  try {
+    for (const bad of ['10', '-5m', '1.5m', '', '5d', 'm', '10M']) {
+      const en = await runInProcess(['analyze', file, '--skip', bad, '--lang', 'en']);
+      assert.equal(en.code, 2, `"${bad}" is rejected`);
+      assert.match(en.stderr, /--skip/);
+      const ko = await runInProcess(['analyze', file, '--skip', bad, '--lang', 'ko']);
+      assert.equal(ko.code, 2);
+      // "-5m" and "" never reach the parser (parseArgs reports a missing value); the rest list the units.
+      if (bad === '' || bad.startsWith('-')) continue;
+      assert.match(en.stderr, /whole number followed by one of s, m, h/);
+      assert.match(ko.stderr, /정수 뒤에 s, m, h 중 하나/);
+    }
+  } finally {
+    cleanup();
+  }
+});
+
+test('--help documents --skip in both languages and the new line fits in 80 columns', () => {
+  for (const lang of ['en', 'ko']) {
+    const help = runBin(['--help', '--lang', lang]).stdout;
+    assert.ok(!help.includes('{skipUnits}'), `${lang}: placeholder filled`);
+    const line = help.split('\n').find((l) => l.includes('--skip'));
+    assert.ok(line, `${lang}: --skip line`);
+    assert.match(line, /--skip <n><s\|m\|h>/);
+    assert.ok([...line].length <= 80, `${lang}: ${[...line].length} columns`);
+  }
 });

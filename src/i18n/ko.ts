@@ -35,6 +35,7 @@ export const ko: Record<MessageKey, string> = {
   'exp.command': 'analyze 또는 simulate',
   'exp.format': '{list} 중 하나',
   'exp.fail-on': 'any 또는 쉼표로 구분한 목록({list})',
+  'exp.duration': '정수 뒤에 {list} 중 하나를 붙인 값, 예 10m',
   'exp.lang': 'en 또는 ko',
   'exp.int-3-1000': '3 이상 1000 이하의 정수',
   'exp.int-1-60000': '1 이상 60000 이하의 정수',
@@ -88,6 +89,7 @@ export const ko: Record<MessageKey, string> = {
   'report.span': '샘플: {samples}개, {minutes}분 ({from} .. {to}), pid {pid}, Node {node}',
   'report.next': '다음 단계',
   'report.warnings': '경고',
+  'report.skipped': ' --skip 으로 {skipped}개 행을 건너뛰었습니다.',
   'report.insufficient': '사용 가능한 샘플이 {samples}개뿐입니다(최소 {needed}개 필요).',
   'md.col.verdict': '판정',
   'md.col.confidence': '신뢰도',
@@ -114,6 +116,7 @@ export const ko: Record<MessageKey, string> = {
   --min-rel-growth <n>      시작 수준 대비 최소 증가 비율, 0.1 = 10%(기본 0.1; 큰 힙이면 낮추세요.
                             --min-growth-mb 만 주면 이 값은 0 이 됩니다)
   --min-r2 <0..1>           추세 적합도 최솟값(기본 0.5)
+  --skip <n><{skipUnits}>         앞부분 n초/분/시간(워밍업) 제외, 예 10m
   --out <파일>              simulate: 기록된 JSONL 을 이 파일에 남김
   --steps <n>               simulate: 증가 단계 수(기본 10)
   --interval-ms <n>         simulate: 단계 사이 대기 ms(기본 50)

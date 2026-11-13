@@ -1,6 +1,6 @@
 {
   "name": "leakverdict",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "Tells you which kind of Node.js memory growth you have (JS heap, native buffers, handles, allocator retention) from a runtime metrics time series.",
   "keywords": ["nodejs", "memory", "memory-leak", "diagnostics", "rss", "heap", "soak-test"],
   "license": "MIT",
