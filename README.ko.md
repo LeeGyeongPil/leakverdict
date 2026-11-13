@@ -16,7 +16,15 @@ leakverdict 는 `process.memoryUsage()` 시계열로 Node.js 메모리 증가가
 npm install github:LeeGyeongPil/leakverdict
 ```
 
-Node 20 이상이 필요하고 런타임 의존성은 없습니다. 아직 npm 레지스트리에는 올라가 있지 않아 GitHub 에서 설치하거나(`prepare` 스크립트가 빌드합니다) 레포를 clone 합니다. 새 npm 버전(예: 11.x)은 GitHub 설치 중 `npm warn install-scripts ... leakverdict (prepare ...)` 경고를 낼 수 있습니다. 오류가 아니라 빌드 단계이고 설치는 그대로 됩니다. 승인해도 됩니다.
+Node 20 이상이 필요하고 런타임 의존성은 없습니다. 아직 npm 레지스트리에는 올라가 있지 않아 GitHub 에서 설치하거나(`prepare` 스크립트가 빌드합니다) 레포를 clone 합니다. 새 npm 버전(예: 11.x)은 GitHub 설치 중 `npm warn install-scripts ... leakverdict (prepare ...)` 경고를 낼 수 있습니다. 오류가 아니라 빌드 단계이고 설치는 그대로 됩니다. 아래 명령으로 승인해도 됩니다:
+
+```bash
+npm install-scripts approve leakverdict
+```
+
+npm 은 승인 내용을 프로젝트의 `package.json` 의 `allowScripts` 에 기록합니다. 패키지를 업데이트하면 다시 승인해야 합니다.
+
+또는 레포를 clone 해서 데모를 실행합니다:
 
 ```bash
 git clone https://github.com/LeeGyeongPil/leakverdict.git

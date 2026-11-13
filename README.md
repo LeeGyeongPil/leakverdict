@@ -19,6 +19,14 @@ npm install github:LeeGyeongPil/leakverdict
 Requires Node 20 or newer. There are no runtime dependencies. The package is not on the npm registry yet, so install it from GitHub (the `prepare` script builds it) or clone the repo. Newer npm versions (for example 11.x) may print `npm warn install-scripts ... leakverdict (prepare ...)` during a GitHub install. That is the build step, not an error; the install still works, and you can approve it:
 
 ```bash
+npm install-scripts approve leakverdict
+```
+
+npm records the approval in the project's `package.json` under `allowScripts`. After you update the package, approve it again.
+
+Or clone the repo and run the demo:
+
+```bash
 git clone https://github.com/LeeGyeongPil/leakverdict.git
 cd leakverdict
 npm install

@@ -3,6 +3,14 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [0.1.2] - 2026-11-13
+
+### Fixed
+- README install section: show the `npm install-scripts approve leakverdict` command; the clone steps were directly under "you can approve it:" and read as the approval method.
+
+### Known issues
+- `npm install-scripts approve leakverdict` fails with ENOMATCH when leakverdict was installed from a local `git+file:` path. It works for the documented `github:` install.
+
 ## [0.1.1] - 2026-11-12
 
 ### Fixed
@@ -30,5 +38,6 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and 
 - Errors are thrown as `LeakverdictError { code, params }` (13 codes) and rendered per language by the CLI; Korean messages contain no English fragments.
 - Dual ESM + CommonJS build, zero runtime dependencies, Node 20 / 22 / 24 CI.
 
+[0.1.2]: https://github.com/LeeGyeongPil/leakverdict/releases/tag/v0.1.2
 [0.1.1]: https://github.com/LeeGyeongPil/leakverdict/releases/tag/v0.1.1
 [0.1.0]: https://github.com/LeeGyeongPil/leakverdict/releases/tag/v0.1.0
