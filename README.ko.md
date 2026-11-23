@@ -276,7 +276,7 @@ npx leakverdict analyze mem.jsonl
 git clone https://github.com/LeeGyeongPil/leakverdict.git
 cd leakverdict
 npm install
-LANG=C.UTF-8 LC_ALL=C.UTF-8 npm test   # tsc(strict) 빌드 후 테스트 81개
+LANG=C.UTF-8 LC_ALL=C.UTF-8 npm test   # tsc(strict) 빌드 후 테스트 82개
 node scripts/check-pack.mjs            # 패키징 후 다른 곳에 tarball 을 설치해 ESM·CJS·bin 확인
 ```
 
