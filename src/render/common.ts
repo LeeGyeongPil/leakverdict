@@ -69,6 +69,15 @@ function isoSeconds(ms: number): string {
 }
 
 export function spanLine(report: Report, lang: Lang): string {
+  if (report.span.samples === 0 && report.skipped > 0) {
+    return t(lang, 'report.spanSkippedAll', {
+      skipped: report.skipped,
+      from: isoSeconds(report.span.from),
+      to: isoSeconds(report.span.to),
+      pid: report.span.pid,
+      node: report.span.node,
+    });
+  }
   const minutes = ((report.span.to - report.span.from) / 60000).toFixed(1);
   return t(lang, 'report.span', {
     samples: report.span.samples,

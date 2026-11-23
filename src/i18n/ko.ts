@@ -87,6 +87,7 @@ export const ko: Record<MessageKey, string> = {
 
   'report.title': 'leakverdict 보고서',
   'report.span': '샘플: {samples}개, {minutes}분 ({from} .. {to}), pid {pid}, Node {node}',
+  'report.spanSkippedAll': '샘플: 0개 (--skip 으로 {skipped}행 모두 제외됨; 원래 로그 기간 {from} .. {to}, pid {pid}, Node {node})',
   'report.next': '다음 단계',
   'report.warnings': '경고',
   'report.skipped': ' --skip 으로 {skipped}개 행을 건너뛰었습니다.',

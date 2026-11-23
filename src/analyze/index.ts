@@ -65,8 +65,10 @@ export function analyze(rows: readonly Row[], opts: AnalyzeOptions = {}): Report
   // Warm-up: drop rows that are less than `skip` ms after the first row; the rest is analyzed as usual.
   const cutoff = (all[0]?.t ?? 0) + (opts.skip ?? 0);
   const sorted = all.filter((r) => r.t >= cutoff);
-  const first = sorted[0];
-  const last = sorted[sorted.length - 1];
+  // When --skip removes every row, report the span of the original log instead of fake zero values.
+  const spanRows = sorted.length > 0 ? sorted : all;
+  const first = spanRows[0];
+  const last = spanRows[spanRows.length - 1];
   return {
     version: 1,
     span: {

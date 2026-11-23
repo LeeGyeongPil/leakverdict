@@ -90,6 +90,7 @@ export const en = {
   // ---- report ----
   'report.title': 'leakverdict report',
   'report.span': 'Samples: {samples} over {minutes} min ({from} .. {to}), pid {pid}, Node {node}',
+  'report.spanSkippedAll': 'Samples: 0 (all {skipped} rows skipped by --skip; log covered {from} .. {to}, pid {pid}, Node {node})',
   'report.next': 'Next step',
   'report.warnings': 'Warnings',
   'report.skipped': ' {skipped} rows were skipped by --skip.',

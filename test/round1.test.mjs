@@ -216,3 +216,24 @@ test('Q-8: a bad environment variable is named in the warning', () => {
     tmp.cleanup();
   }
 });
+
+// ---------- --skip removing every row: header shows the original log range, not 1970 / pid 0 ----------
+
+test('--skip longer than the log: header and JSON span use the original log range', async () => {
+  const f = fixture('js-heap.jsonl');
+  for (const lang of ['en', 'ko']) {
+    for (const format of ['text', 'md']) {
+      const r = await runInProcess(['analyze', f, '--skip', '2h', '--format', format, '--lang', lang]);
+      assert.doesNotMatch(r.stdout, /1970-01-01/);
+      assert.doesNotMatch(r.stdout, /pid 0\b/);
+      assert.match(r.stdout, /60/);
+      assert.match(r.stdout, /pid 4242/);
+      assert.match(r.stdout, /2023-11-14T/);
+    }
+  }
+  const j = JSON.parse((await runInProcess(['analyze', f, '--skip', '2h', '--format', 'json'])).stdout);
+  assert.equal(j.skipped, 60);
+  assert.equal(j.span.samples, 0);
+  assert.equal(j.span.pid, 4242);
+  assert.ok(j.span.from > 0 && j.span.to > j.span.from);
+});
