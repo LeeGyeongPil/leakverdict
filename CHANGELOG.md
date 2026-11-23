@@ -3,6 +3,13 @@
 All notable changes to this project are documented here.
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+## [0.2.1] - 2026-11-23
+
+### Fixed
+- When `--skip` removes every row, the report header no longer shows `1970-01-01 .. 1970-01-01, pid 0`. It now shows the number of skipped rows and the original log period and pid, and the JSON `span` holds the original log range (`samples` stays 0).
+
 ## [0.2.0] - 2026-11-13
 
 ### Added
